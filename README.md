@@ -11,7 +11,7 @@
   <a href="#description">Description</a> •
   <a href="#screenshots">Screenshots</a> •
   <a href="#goals">Goals</a> •
-  <a href="https://gmsgarcia.pt/projects/macaw.html">Website</a>
+  <a href="https://gmsgarcia.pt/projects/gale.html">Website</a>
 </p>
 
 <h2 id="description">💨 What is Gale?</h2>
