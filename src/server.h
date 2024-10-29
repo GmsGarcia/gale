@@ -16,7 +16,6 @@ private:
   void handle_connection(int client_fd);
   std::string generate_response(const std::string &req);
   int getPort() { return _port; }
-  FILE getFile();
 
 public:
   void start(uint16_t port);

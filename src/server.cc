@@ -71,7 +71,7 @@ void HttpServer::listen() {
         accept(_sock_fd, (struct sockaddr *)&clientAddress, &clientLen);
 
     if (client_fd >= 0) {
-      std::cout << "Client connected.\n";
+      //std::cout << "Client connected.\n";
       handle_connection(client_fd);
       close(client_fd);
     } else {
@@ -91,6 +91,8 @@ void HttpServer::handle_connection(int client_fd) {
 
   recv(client_fd, buf, sizeof(buf), 0);
   req.parse(buf);
+
+  std::cout << "Requested " << req.reqline.target << std::endl;
 
   HttpResponse res;
   res.generate(req);
