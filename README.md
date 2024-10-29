@@ -1,11 +1,11 @@
 <h1 align="center">
   <a href="https://github.com/GmsGarcia/gale"><img src="https://raw.githubusercontent.com/GmsGarcia/gale/master/media/logo.png" alt="Gale" width="200"></a>
   <br>
-  HTTP [WIP]
+  Gale [WIP]
   <br>
 </h1>
 
-<h3 align="center">Simple web server developed with C++ 🌞</h3>
+<h3 align="center">Simple web server developed with C++ 👻</h3>
 
 <p align="center">
   <a href="#description">Description</a> •
@@ -27,7 +27,6 @@ Gale is a simple web server currently being developed in C++.
 
 <h2 id="goals">🎯 Personal Goals</h2>
 
-- learn C++
 - understand how HTTP protocol work
 - play with sockets :PP
 
