@@ -1,5 +1,6 @@
 #include "server.h"
 #include "http.h"
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
@@ -9,8 +10,9 @@
 #include <thread>
 #include <unistd.h>
 
-void HttpServer::start() {
+void HttpServer::start(uint16_t port) {
   std::cout << "Starting TCP server...\n";
+  _port = port;
   _running = true;
 
   _sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -18,7 +20,7 @@ void HttpServer::start() {
   // CREATE SOCKET
   sockaddr_in serverAddress;
   serverAddress.sin_family = AF_INET;
-  serverAddress.sin_port = htons(8000);
+  serverAddress.sin_port = htons(_port);
   serverAddress.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(_sock_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) <
@@ -39,7 +41,7 @@ void HttpServer::start() {
   std::thread listener(&HttpServer ::listen, this);
   listener.detach();
 
-  std::cout << "The TCP server is now running. Type 'help' for a list of all "
+  std::cout << "The TCP server is now running on port " << getPort() << ". Type 'help' for a list of all "
                "commands.\n";
 
   // TUI COMMANDS
@@ -50,6 +52,7 @@ void HttpServer::start() {
     if (cmd == "quit" || cmd == "exit") {
       std::cout << "Stopping TCP server...\n";
       stop();
+      exit(0);
       std::cout << "The server stopped successfully.\n";
     } else if (cmd == "help") {
       std::cout << "COMMANDS LIST:\n";
@@ -92,8 +95,6 @@ void HttpServer::handle_connection(int client_fd) {
   HttpResponse res;
   res.generate(req);
   std::string txt = res.as_string();
-
-  std::cout << txt << std::endl;
 
   send(client_fd, txt.c_str(), txt.size(), 0);
   close(client_fd);

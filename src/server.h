@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <cstdint>
 #include <cstdio>
 #include <string>
 
@@ -18,7 +19,7 @@ private:
   FILE getFile();
 
 public:
-  void start();
+  void start(uint16_t port);
   bool isRunning() { return _running; }
 };
 

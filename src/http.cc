@@ -1,6 +1,6 @@
 #include "http.h"
-#include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <ostream>
@@ -18,7 +18,6 @@ void HttpRequest::parse(std::string raw) {
 
 bool HttpRequest::parseReqLine(const std::string &line) {
   std::istringstream stream(line);
-  std::cout << line << std::endl;
   if (!(stream >> reqline.method >> reqline.target >> reqline.version)) {
     perror("Failed to parse request line");
     return false;
@@ -41,29 +40,31 @@ void HttpResponse::generate(HttpRequest &req) {
 
     std::string path = req.reqline.target;
 
+    
     if (path == "/") {
-      path = "../public/index.html";
+      path = "public/index.html";
     } else {
-      path = "../public" + path;
+      path = "public" + path;
     }
 
     std::ifstream file(path);
 
-    if (file) {
+    if (file.is_open()) {
       std::stringstream buf;
       buf << file.rdbuf();
       body = buf.str();
       file.close();
 
     } else {
-      std::cout << "first" << std::endl;
+      std::cout << "File not found." << std::endl;
       strline.status = 404;
       strline.message = "Not Found";
 
       body = "<html><body><h1>Not found :(</h1></body></html>";
     }
   } else {
-    std::cout << "last" << std::endl;
+    // OTHER METHODS SHOULD GO HERE
+    std::cout << "Not a GET request." << std::endl;
     strline.status = 404;
     strline.message = "Not Found";
 
