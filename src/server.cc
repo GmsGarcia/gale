@@ -90,32 +90,13 @@ void HttpServer::handle_connection(int client_fd) {
   req.parse(buf);
 
   HttpResponse res;
-  send(client_fd, res.c_str(), res.length(), 0);
+  res.generate(req);
+  std::string txt = res.as_string();
+
+  std::cout << txt << std::endl;
+
+  send(client_fd, txt.c_str(), txt.size(), 0);
   close(client_fd);
-}
-
-std::string HttpServer::generate_response(const std::string &req) {
-  std::string res;
-
-  std::string body = "<html><body><h1>Hello, world!</h1></body></html>";
-  std::string e404 = "<html><body><h1>Not found :(</h1></body></html>";
-
-  // if is GET
-  if (req.substr(0, 3) == "GET") {
-    res = "HTTP/1.1 200 OK\r\n"
-          "Content-Type: text/html\r\n"
-          "Content-Length: " +
-          std::to_string(body.size()) +
-          "\r\n"
-          "Connection: close\r\n\r\n" +
-          body;
-  } else {
-    res = "HTTP/1.1 404 Not Found\r\n"
-          "Content-Length: 0\r\n"
-          "Connection: close\r\n\r\n" +
-          e404;
-  }
-  return res;
 }
 
 void HttpServer::stop() {
