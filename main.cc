@@ -3,6 +3,6 @@
 using namespace std;
 
 int main() {
-  HttpServer server = HttpServer();
+  HttpServer server;
   server.start();
 }

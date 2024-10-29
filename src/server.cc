@@ -1,16 +1,13 @@
 #include "server.h"
+#include "http.h"
 #include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
-#include <numeric>
 #include <ostream>
 #include <string>
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
-
-// HttpServer 's constructor
-HttpServer::HttpServer () {}
 
 void HttpServer::start() {
   std::cout << "Starting TCP server...\n";
@@ -25,6 +22,7 @@ void HttpServer::start() {
   serverAddress.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(_sock_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) <
+
       0) {
     perror("Failed to bind socket.");
     close(_sock_fd);
@@ -86,30 +84,32 @@ void HttpServer::listen() {
 
 void HttpServer::handle_connection(int client_fd) {
   char buf[1024] = {0};
+  HttpRequest req;
 
   recv(client_fd, buf, sizeof(buf), 0);
-  std::cout << "Requested: " << buf << std::endl;
+  req.parse(buf);
 
-  std::string res = generate_response(buf);
+  HttpResponse res;
   send(client_fd, res.c_str(), res.length(), 0);
   close(client_fd);
 }
 
-std::string HttpServer::generate_response(const std::string& req) {
+std::string HttpServer::generate_response(const std::string &req) {
   std::string res;
+
   std::string body = "<html><body><h1>Hello, world!</h1></body></html>";
   std::string e404 = "<html><body><h1>Not found :(</h1></body></html>";
 
   // if is GET
-  if (req.substr(0,3) == "GET") {
-    std::cout << "GET";
+  if (req.substr(0, 3) == "GET") {
     res = "HTTP/1.1 200 OK\r\n"
           "Content-Type: text/html\r\n"
-          "Content-Length: " + std::to_string(body.size()) + "\r\n"
+          "Content-Length: " +
+          std::to_string(body.size()) +
+          "\r\n"
           "Connection: close\r\n\r\n" +
           body;
   } else {
-    std::cout << "ELSE";
     res = "HTTP/1.1 404 Not Found\r\n"
           "Content-Length: 0\r\n"
           "Connection: close\r\n\r\n" +
@@ -118,4 +118,10 @@ std::string HttpServer::generate_response(const std::string& req) {
   return res;
 }
 
-void HttpServer::stop() { _running = false; }
+void HttpServer::stop() {
+  _running = false;
+  if (_sock_fd >= 0) {
+    close(_sock_fd);
+    _sock_fd = -1;
+  }
+}
