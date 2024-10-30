@@ -30,9 +30,9 @@ public:
   void parse(std::string raw);
 
 private:
-  bool parseReqLine(const std::string &line);
-  bool parseHeaders(std::istringstream &stream);
-  bool parseBody(std::istringstream &stream);
+  bool parse_request_line(const std::string &line);
+  bool parse_headers(std::istringstream &stream);
+  bool parse_body(std::istringstream &stream);
 };
 
 class HttpResponse {
@@ -43,6 +43,9 @@ public:
   void generate(HttpRequest &req);
   std::string as_string();
   uint length();
+
+private:
+  void set_mime_type(std::string ext);
 };
 
 #endif

@@ -15,11 +15,11 @@ private:
   void listen();
   void handle_connection(int client_fd);
   std::string generate_response(const std::string &req);
-  int getPort() { return _port; }
+  int get_port() { return _port; }
 
 public:
   void start(uint16_t port);
-  bool isRunning() { return _running; }
+  bool is_running() { return _running; }
 };
 
 #endif

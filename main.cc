@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-  uint16_t port = 8080;
+  uint16_t port = 80;
   HttpServer server;
   server.start(port);
 }

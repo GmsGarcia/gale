@@ -41,7 +41,8 @@ void HttpServer::start(uint16_t port) {
   std::thread listener(&HttpServer ::listen, this);
   listener.detach();
 
-  std::cout << "The TCP server is now running on port " << getPort() << ". Type 'help' for a list of all "
+  std::cout << "The TCP server is now running on port " << get_port()
+            << ". Type 'help' for a list of all "
                "commands.\n";
 
   // TUI COMMANDS
@@ -71,7 +72,7 @@ void HttpServer::listen() {
         accept(_sock_fd, (struct sockaddr *)&clientAddress, &clientLen);
 
     if (client_fd >= 0) {
-      //std::cout << "Client connected.\n";
+      // std::cout << "Client connected.\n";
       handle_connection(client_fd);
       close(client_fd);
     } else {
