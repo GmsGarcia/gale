@@ -1,6 +1,10 @@
 #include "http.h"
+#include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
+#include <iomanip>
+#include <ios>
 #include <iostream>
 #include <ostream>
 #include <sstream>
@@ -25,59 +29,68 @@ bool HttpRequest::parse_request_line(const std::string &line) {
 }
 
 void HttpResponse::generate(HttpRequest &req) {
-
   strline.version = "HTTP/1.1";
   headers = Headers{};
+  length = 0;
+  std::string path = "public" + req.reqline.target;
+  bool found = false;
+
+  // if the path exists and its a directory, adds '/index.html'
+  if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
+    path += "/index.html";
+  }
+
+  std::stringstream buf;
+
+  // if the path exists and is a regular file, saves its content in a buffer
+  if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path)) {
+    found = true;
+    std::ifstream file(path);
+    buf << file.rdbuf();
+    file.close();
+  } else {
+    std::cout << "File not found." << std::endl;
+  }
 
   // if is GET
-  if (req.reqline.method == "GET") {
-    strline.status = 200;
-    strline.message = "OK";
-
-    std::string path = "public" + req.reqline.target;
-
-    if (path[path.size() - 1] == '/') {
-      path = path + "/index.html";
-    }
-
-    std::ifstream file(path);
-
-    // check if file exists, if it doesn't, checks if its a directory with an
-    // index.html file inside
-    if (file.is_open()) {
-      std::stringstream buf;
-      buf << file.rdbuf();
-      body = buf.str();
-      file.close();
+  if (req.reqline.method == "GET" || req.reqline.method == "HEAD") {
+    if (found) {
+      strline.status = 200;
+      strline.message = "OK";
       set_mime_type(path);
-    } else {
-      path = path + "/index.html";
 
-      std::ifstream file(path);
+      length = buf.str().size();
 
-      if (file.is_open()) {
-        std::stringstream buf;
-        buf << file.rdbuf();
+      if (req.reqline.method == "GET") {
         body = buf.str();
-        file.close();
-        set_mime_type(path);
-      } else {
-        std::cout << "File not found." << std::endl;
-        strline.status = 404;
-        strline.message = "Not Found";
-        body = "<html><body><h1>Not found :(</h1></body></html>";
       }
+    } else {
+      std::cout << "File not found." << std::endl;
+      strline.status = 404;
+      strline.message = "Not Found";
+
+      std::string err_msg = "<html><body><h1>Not found :(</h1></body></html>";
+
+      if (req.reqline.method == "GET") {
+        body = err_msg;
+      }
+
+      length = err_msg.size();
     }
   } else {
     // OTHER METHODS SHOULD GO HERE
-    std::cout << "Not a GET request." << std::endl;
-    strline.status = 404;
-    strline.message = "Not Found";
+    std::cout << "Not a GET/HEAD request." << std::endl;
+    strline.status = 501;
+    strline.message = "Not Implemented";
 
-    body = "<html><body><h1>Not found :(</h1></body></html>";
+    body = "<html><body><h1>501 - Not Implemented :(</h1></body></html>";
   }
-
-  headers->insert({"Content-Length", std::to_string(body->size())});
+  time_t t = time(nullptr);
+  tm *gmt = gmtime(&t);
+  std::stringstream datetime;
+  datetime << std::put_time(gmt, "%a, %d %b %Y %H:%M:%S GMT");
+  headers->insert({"Date", datetime.str()});
+  headers->insert({"Content-Length", std::to_string(length)});
   headers->insert({"Connection", "close"});
 }
 

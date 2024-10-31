@@ -42,7 +42,7 @@ public:
   std::optional<std::string> body;
   void generate(HttpRequest &req);
   std::string as_string();
-  uint length();
+  uint length;
 
 private:
   void set_mime_type(std::string ext);
