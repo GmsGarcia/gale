@@ -1,5 +1,7 @@
 #include "utils.h"
+#include <chrono>
 #include <cstdlib>
+#include <iomanip>
 #include <string>
 
 std::string get_mime_from_ext(std::string ext) {
@@ -18,4 +20,16 @@ std::string get_mime_from_ext(std::string ext) {
   } else {
     return "application/octet-stream";
   }
+}
+
+std::string get_current_timestamp() {
+  auto now = std::chrono::system_clock::now();
+  std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+
+  std::tm local_tm = *std::localtime(&now_time);
+
+  std::ostringstream oss;
+  oss << std::put_time(&local_tm, "%Y/%m/%d %H:%M:%S");
+
+  return oss.str();
 }

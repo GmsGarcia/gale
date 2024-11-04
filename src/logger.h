@@ -9,4 +9,5 @@ public:
   void disable() { _active = false; };
   bool is_active() { return _active; };
   void log_request(HttpRequest &req, HttpResponse &res);
+  void log(std::string);
 };

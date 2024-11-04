@@ -45,6 +45,8 @@ void HttpServer::start(uint16_t port) {
             << ". Type 'help' for a list of all "
                "commands.\n";
 
+  logger.enable();
+
   // TUI COMMANDS
   while (true) {
     std::string cmd;

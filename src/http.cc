@@ -49,8 +49,6 @@ void HttpResponse::generate(HttpRequest &req) {
     std::ifstream file(path);
     buf << file.rdbuf();
     file.close();
-  } else {
-    std::cout << "File not found." << std::endl;
   }
 
   // if is GET
