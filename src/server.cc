@@ -1,5 +1,6 @@
 #include "server.h"
 #include "http.h"
+#include <arpa/inet.h>
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
@@ -24,7 +25,6 @@ void HttpServer::start(uint16_t port) {
   serverAddress.sin_addr.s_addr = INADDR_ANY;
 
   if (bind(_sock_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) <
-
       0) {
     perror("Failed to bind socket.");
     close(_sock_fd);
@@ -57,7 +57,16 @@ void HttpServer::start(uint16_t port) {
       std::cout << "The server stopped successfully.\n";
     } else if (cmd == "help") {
       std::cout << "COMMANDS LIST:\n";
-      std::cout << "quit / stop / exit - Stops the server.\n";
+      std::cout << "quit / stop / exit - Stops the server.\nlog - Toggle the "
+                   "logger.\n";
+    } else if (cmd == "log") {
+      if (logger.is_active()) {
+        logger.disable();
+        std::cout << "Logger disabled.\n";
+      } else {
+        logger.enable();
+        std::cout << "Logger enable.\n";
+      }
     } else {
       std::cout << "Command '" << cmd << "' not found.\n";
     }
@@ -66,14 +75,14 @@ void HttpServer::start(uint16_t port) {
 
 void HttpServer::listen() {
   while (_running) {
-    sockaddr_in clientAddress;
-    socklen_t clientLen = sizeof(clientAddress);
+    sockaddr_in client_addr;
+    socklen_t client_len = sizeof(client_addr);
     int client_fd =
-        accept(_sock_fd, (struct sockaddr *)&clientAddress, &clientLen);
+        accept(_sock_fd, (struct sockaddr *)&client_addr, &client_len);
 
     if (client_fd >= 0) {
       // std::cout << "Client connected.\n";
-      handle_connection(client_fd);
+      handle_connection(client_fd, client_addr, client_len);
       close(client_fd);
     } else {
       if (_running) {
@@ -86,18 +95,20 @@ void HttpServer::listen() {
   }
 }
 
-void HttpServer::handle_connection(int client_fd) {
+void HttpServer::handle_connection(int client_fd, sockaddr_in client_addr,
+                                   socklen_t client_len) {
   char buf[1024] = {0};
   HttpRequest req;
+  req.client.host = client_addr;
 
   recv(client_fd, buf, sizeof(buf), 0);
   req.parse(buf);
 
-  std::cout << "Requested " << req.reqline.target << std::endl;
-
   HttpResponse res;
   res.generate(req);
   std::string txt = res.as_string();
+
+  logger.log_request(req, res);
 
   send(client_fd, txt.c_str(), txt.size(), 0);
   close(client_fd);

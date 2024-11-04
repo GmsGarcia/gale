@@ -11,7 +11,7 @@ LIBS =
 OUTPUT = output/http
 
 # Source files
-SRCS = main.cc src/server.cc src/http.cc
+SRCS = main.cc src/server.cc src/http.cc src/logger.cc src/utils.cc
 
 # Object files (replace .cc with output/.o)
 OBJS = $(SRCS:%.cc=output/%.o)

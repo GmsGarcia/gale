@@ -1,4 +1,5 @@
 #include "http.h"
+#include "utils.h"
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -65,7 +66,6 @@ void HttpResponse::generate(HttpRequest &req) {
         body = buf.str();
       }
     } else {
-      std::cout << "File not found." << std::endl;
       strline.status = 404;
       strline.message = "Not Found";
 
@@ -99,23 +99,7 @@ void HttpResponse::set_mime_type(std::string target) {
 
   if (dot_pos != std::string::npos && dot_pos + 1 < target.size()) {
     std::string ext = target.substr(dot_pos + 1);
-    std::string mime = "";
-
-    if (ext == "txt") {
-      mime = "text/plain";
-    } else if (ext == "css" || ext == "csv" || ext == "html") {
-      mime = "text/" + ext;
-    } else if (ext == "js" || ext == "mjs") {
-      mime = "text/javascript";
-    } else if (ext == "json") {
-      mime = "application/" + ext;
-    } else if (ext == "png" || ext == "jpeg" || ext == "gif" || ext == "bmp") {
-      mime = "image/" + ext;
-    } else if (ext == "jpg") {
-      mime = "image/jpeg";
-    } else {
-      mime = "application/octet-stream";
-    }
+    std::string mime = get_mime_from_ext(ext);
 
     if (!mime.empty()) {
       headers->insert({"Content-Type", mime});

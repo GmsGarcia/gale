@@ -2,7 +2,9 @@
 #define HTTP_H
 
 #include <cstdint>
+#include <cwchar>
 #include <map>
+#include <netinet/in.h>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -20,6 +22,11 @@ struct StartLine {
   std::string message;
 };
 
+struct Client {
+  sockaddr_in host;
+  int port;
+};
+
 typedef std::map<std::string, std::string> Headers;
 
 class HttpRequest {
@@ -27,6 +34,7 @@ public:
   RequestLine reqline;
   std::optional<Headers> headers;
   std::optional<std::string> body;
+  Client client;
   void parse(std::string raw);
 
 private:
