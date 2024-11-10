@@ -18,27 +18,62 @@ void HttpRequest::parse(std::string raw) {
   if (std::getline(stream, line)) {
     parse_request_line(line);
   }
+
+  parse_headers(stream);
 }
 
-bool HttpRequest::parse_request_line(const std::string &line) {
+void HttpRequest::parse_request_line(const std::string &line) {
   std::istringstream stream(line);
   if (!(stream >> reqline.method >> reqline.target >> reqline.version)) {
+    // internal error [500] here... // couldn't parse the headers
     perror("Failed to parse request line");
-    return false;
   }
-  return true;
+}
+
+void HttpRequest::parse_headers(std::istringstream &stream) {
+  std::string line;
+
+  headers = Headers{};
+
+  while (std::getline(stream, line) && !line.empty() && line != "\r") {
+    if (line.back() == '\r') {
+      line.pop_back();
+    }
+
+    std::size_t pos = line.find(": ");
+
+    if (pos != std::string::npos) {
+      std::string header_key = line.substr(0, pos);
+      std::string header_value = line.substr(pos + 2);
+      headers->insert({header_key, header_value});
+    }
+  }
 }
 
 void HttpResponse::generate(HttpRequest &req) {
   strline.version = "HTTP/1.1";
-  headers = Headers{};
   length = 0;
   std::string path = "public" + req.reqline.target;
   bool found = false;
 
-  // if the path exists and its a directory, adds '/index.html'
+  headers = Headers{};
+
+  // check if its a directory
   if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
-    path += "/index.html";
+    if (req.reqline.target.back() != '/') {
+      strline.status = 301;
+      strline.message = "Moved Permanently";
+      headers->insert({"Location", req.reqline.target + "/"});
+      return;
+    }
+    path += "index.html";
+  } else if (!std::filesystem::exists(path)) {
+    // Check if appending ".html" makes it a valid path
+    std::string html_path = path + ".html";
+    if (std::filesystem::exists(html_path) &&
+        std::filesystem::is_regular_file(html_path)) {
+      path = html_path; // Use the path with the ".html" extension
+    }
   }
 
   std::stringstream buf;
@@ -83,6 +118,7 @@ void HttpResponse::generate(HttpRequest &req) {
 
     body = "<html><body><h1>501 - Not Implemented :(</h1></body></html>";
   }
+
   time_t t = time(nullptr);
   tm *gmt = gmtime(&t);
   std::stringstream datetime;

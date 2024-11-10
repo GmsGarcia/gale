@@ -8,6 +8,7 @@
 #include <ostream>
 #include <string>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <thread>
 #include <unistd.h>
 

@@ -38,9 +38,9 @@ public:
   void parse(std::string raw);
 
 private:
-  bool parse_request_line(const std::string &line);
-  bool parse_headers(std::istringstream &stream);
-  bool parse_body(std::istringstream &stream);
+  void parse_request_line(const std::string &line);
+  void parse_headers(std::istringstream &stream);
+  void parse_body(std::istringstream &stream);
 };
 
 class HttpResponse {
