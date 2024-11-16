@@ -1,9 +1,9 @@
 #include "http.h"
 #include "utils.h"
+#include "html.h"
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
-#include <fstream>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -58,7 +58,7 @@ void HttpResponse::generate(HttpRequest &req) {
 
   headers = Headers{};
 
-  // check if its a directory
+  // check if its a directory, and if its a directory and path doesnt end with "/" redirects...
   if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) {
     if (req.reqline.target.back() != '/') {
       strline.status = 301;
@@ -68,56 +68,43 @@ void HttpResponse::generate(HttpRequest &req) {
     }
     path += "index.html";
   } else if (!std::filesystem::exists(path)) {
-    // Check if appending ".html" makes it a valid path
+    // check if appending ".html" makes it a valid path
     std::string html_path = path + ".html";
     if (std::filesystem::exists(html_path) &&
         std::filesystem::is_regular_file(html_path)) {
-      path = html_path; // Use the path with the ".html" extension
+      path = html_path; 
     }
   }
 
-  std::stringstream buf;
+  std::string html;
 
-  // if the path exists and is a regular file, saves its content in a buffer
+  // if the path exists and is a regular file, get file content
   if (std::filesystem::exists(path) && std::filesystem::is_regular_file(path)) {
     found = true;
-    std::ifstream file(path);
-    buf << file.rdbuf();
-    file.close();
+    html = HTML::generate_from_file(path);
   }
 
-  // if is GET
   if (req.reqline.method == "GET" || req.reqline.method == "HEAD") {
     if (found) {
       strline.status = 200;
       strline.message = "OK";
       set_mime_type(path);
-
-      length = buf.str().size();
-
-      if (req.reqline.method == "GET") {
-        body = buf.str();
-      }
     } else {
       strline.status = 404;
       strline.message = "Not Found";
-
-      std::string err_msg = "<html><body><h1>Not found :(</h1></body></html>";
-
-      if (req.reqline.method == "GET") {
-        body = err_msg;
-      }
-
-      length = err_msg.size();
+      html = HTML::generate_not_found();
     }
   } else {
     // OTHER METHODS SHOULD GO HERE
-    std::cout << "Not a GET/HEAD request." << std::endl;
     strline.status = 501;
     strline.message = "Not Implemented";
-
-    body = "<html><body><h1>501 - Not Implemented :(</h1></body></html>";
+    html = HTML::generate_not_implemented();
   }
+  
+  if (req.reqline.method == "GET") {
+    body = html;
+  }
+  length = html.size();
 
   time_t t = time(nullptr);
   tm *gmt = gmtime(&t);
