@@ -1,6 +1,6 @@
 #include "http.h"
-#include "utils.h"
 #include "html.h"
+#include "utils.h"
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -32,7 +32,6 @@ void HttpRequest::parse_request_line(const std::string &line) {
 
 void HttpRequest::parse_headers(std::istringstream &stream) {
   std::string line;
-
   headers = Headers{};
 
   while (std::getline(stream, line) && !line.empty() && line != "\r") {
@@ -70,9 +69,8 @@ void HttpResponse::generate(HttpRequest &req) {
   } else if (!std::filesystem::exists(path)) {
     // check if appending ".html" makes it a valid path
     std::string html_path = path + ".html";
-    if (std::filesystem::exists(html_path) &&
-        std::filesystem::is_regular_file(html_path)) {
-      path = html_path; 
+    if (std::filesystem::exists(html_path) && std::filesystem::is_regular_file(html_path)) {
+      path = html_path;
     }
   }
 
@@ -100,7 +98,7 @@ void HttpResponse::generate(HttpRequest &req) {
     strline.message = "Not Implemented";
     html = HTML::generate_not_implemented();
   }
-  
+
   if (req.reqline.method == "GET") {
     body = html;
   }
@@ -130,8 +128,7 @@ void HttpResponse::set_mime_type(std::string target) {
 
 std::string HttpResponse::as_string() {
   std::stringstream ss;
-  ss << strline.version << " " << strline.status << " " << strline.message
-     << "\r\n";
+  ss << strline.version << " " << strline.status << " " << strline.message << "\r\n";
 
   if (headers) {
     for (const auto &[key, val] : headers.value()) {

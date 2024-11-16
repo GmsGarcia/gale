@@ -25,8 +25,7 @@ void HttpServer::start(uint16_t port) {
   serverAddress.sin_port = htons(_port);
   serverAddress.sin_addr.s_addr = INADDR_ANY;
 
-  if (bind(_sock_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) <
-      0) {
+  if (bind(_sock_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
     perror("Failed to bind socket.");
     close(_sock_fd);
     return;
@@ -42,9 +41,7 @@ void HttpServer::start(uint16_t port) {
   std::thread listener(&HttpServer ::listen, this);
   listener.detach();
 
-  std::cout << "The TCP server is now running on port " << get_port()
-            << ". Type 'help' for a list of all "
-               "commands.\n";
+  std::cout << "The TCP server is now running on port " << get_port() << ". Type 'help' for a list of all commands.\n";
 
   logger.enable();
 
@@ -56,12 +53,11 @@ void HttpServer::start(uint16_t port) {
     if (cmd == "quit" || cmd == "exit") {
       std::cout << "Stopping TCP server...\n";
       stop();
-      exit(0);
       std::cout << "The server stopped successfully.\n";
+      exit(0);
     } else if (cmd == "help") {
       std::cout << "COMMANDS LIST:\n";
-      std::cout << "quit / stop / exit - Stops the server.\nlog - Toggle the "
-                   "logger.\n";
+      std::cout << "quit / stop / exit - Stops the server.\nlog - Toggle the logger.\n";
     } else if (cmd == "log") {
       if (logger.is_active()) {
         logger.disable();
@@ -80,11 +76,9 @@ void HttpServer::listen() {
   while (_running) {
     sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
-    int client_fd =
-        accept(_sock_fd, (struct sockaddr *)&client_addr, &client_len);
+    int client_fd = accept(_sock_fd, (struct sockaddr *)&client_addr, &client_len);
 
     if (client_fd >= 0) {
-      // std::cout << "Client connected.\n";
       handle_connection(client_fd, client_addr, client_len);
       close(client_fd);
     } else {
@@ -93,13 +87,11 @@ void HttpServer::listen() {
       }
     }
 
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(1000)); // sleep 1s every iteration
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // sleep 1s every iteration
   }
 }
 
-void HttpServer::handle_connection(int client_fd, sockaddr_in client_addr,
-                                   socklen_t client_len) {
+void HttpServer::handle_connection(int client_fd, sockaddr_in client_addr, socklen_t client_len) {
   char buf[1024] = {0};
   HttpRequest req;
   req.client.host = client_addr;

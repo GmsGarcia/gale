@@ -25,8 +25,7 @@ void Logger::log_request(HttpRequest &req, HttpResponse &res) {
   }
 
   // join everything
-  std::string msg = code + " | " + inet_ntoa(req.client.host.sin_addr) + " | " +
-                    req.reqline.method + " " + req.reqline.target;
+  std::string msg = code + " | " + inet_ntoa(req.client.host.sin_addr) + " | " + req.reqline.method + " " + req.reqline.target;
   // then: voilá
   log(msg);
 }

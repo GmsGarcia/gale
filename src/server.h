@@ -16,8 +16,7 @@ private:
   Logger logger;
   void stop();
   void listen();
-  void handle_connection(int client_fd, sockaddr_in client_addr,
-                         socklen_t client_len);
+  void handle_connection(int client_fd, sockaddr_in client_addr, socklen_t client_len);
   std::string generate_response(const std::string &req);
   int get_port() { return _port; }
 
